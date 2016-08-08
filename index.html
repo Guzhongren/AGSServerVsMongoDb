@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>AgsServerVSMongodb by Guzhongren</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">AgsServerVSMongodb</h1>
+      <h2 class="project-tagline">AGSServerVsMongoDb</h2>
+      <a href="https://github.com/Guzhongren/AGSServerVsMongoDb" class="btn">View on GitHub</a>
+      <a href="https://github.com/Guzhongren/AGSServerVsMongoDb/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/Guzhongren/AGSServerVsMongoDb/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="arcgis-for-server-vs-mongodb" class="anchor" href="#arcgis-for-server-vs-mongodb" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>ArcGIS for Server VS MongoDb</h1>
+
+<h2>
+<a id="目录" class="anchor" href="#%E7%9B%AE%E5%BD%95" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>目录</h2>
+
+<ol>
+<li>总体效果展示</li>
+<li>JSON数据生产</li>
+<li>JSON导入MongoDb</li>
+<li>Node+Express+Bootstrap</li>
+<li>运行</li>
+<li>结论</li>
+</ol>
+
+<hr>
+
+<h3>
+<a id="1总体效果展示" class="anchor" href="#1%E6%80%BB%E4%BD%93%E6%95%88%E6%9E%9C%E5%B1%95%E7%A4%BA" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1.总体效果展示</h3>
+
+<p><img src="%E6%88%AA%E5%9B%BE/ServerVSMongoDb.gif" alt="性能效果图"></p>
+
+<h3>
+<a id="2json数据生产" class="anchor" href="#2json%E6%95%B0%E6%8D%AE%E7%94%9F%E4%BA%A7" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2.JSON数据生产</h3>
+
+<h6>
+<a id="21-数据" class="anchor" href="#21-%E6%95%B0%E6%8D%AE" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2.1 数据</h6>
+
+<pre><code>数据如下图：兰州市POI点
+</code></pre>
+
+<p><img src="%E6%88%AA%E5%9B%BE/lanzhouPOI.png" alt="兰州POI"></p>
+
+<h6>
+<a id="22转换为json" class="anchor" href="#22%E8%BD%AC%E6%8D%A2%E4%B8%BAjson" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2.2转换为JSON</h6>
+
+<pre><code>使用ArcGIS提供的Features to JSON工具进行转换
+</code></pre>
+
+<p><img src="%E6%88%AA%E5%9B%BE/featurestojson.png" alt="要素转JSON"></p>
+
+<h3>
+<a id="3json导入mongodb" class="anchor" href="#3json%E5%AF%BC%E5%85%A5mongodb" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3.JSON导入MongoDb</h3>
+
+<h6>
+<a id="31-导入mongodb" class="anchor" href="#31-%E5%AF%BC%E5%85%A5mongodb" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3.1 导入MongoDb</h6>
+
+<pre><code>用Node.js编写Node.js读取JSON文件并将其按照要素格式存入MongoDb中
+</code></pre>
+
+<div class="highlight highlight-source-js"><pre> <span class="pl-c">//features 表创建及document插入</span>
+<span class="pl-smi">db</span>.<span class="pl-en">createCollection</span>(<span class="pl-s"><span class="pl-pds">'</span>features<span class="pl-pds">'</span></span>, {safe<span class="pl-k">:</span> <span class="pl-c1">true</span>}, <span class="pl-k">function</span>(<span class="pl-smi">err</span>, <span class="pl-smi">collection</span>){
+    <span class="pl-k">if</span>(err){
+        <span class="pl-k">throw</span> err;
+    }<span class="pl-k">else</span> {
+        <span class="pl-smi">jsonObj</span>.<span class="pl-smi">features</span>.<span class="pl-en">forEach</span>(<span class="pl-k">function</span>(<span class="pl-smi">value</span>, <span class="pl-smi">key</span>){
+            <span class="pl-k">var</span> temp<span class="pl-k">=</span> {key<span class="pl-k">:</span> value};
+            <span class="pl-smi">collection</span>.<span class="pl-en">insert</span>(temp, {safe<span class="pl-k">:</span> <span class="pl-c1">true</span>}, <span class="pl-k">function</span>(<span class="pl-smi">err</span>, <span class="pl-smi">result</span>){
+                <span class="pl-en">console</span>.<span class="pl-c1">log</span>(result);
+            });
+            temp<span class="pl-k">=</span> <span class="pl-c1">null</span>;
+        });
+
+    }
+});</pre></div>
+
+<h6>
+<a id="32-mongodb中显示" class="anchor" href="#32-mongodb%E4%B8%AD%E6%98%BE%E7%A4%BA" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3.2 MongoDb中显示</h6>
+
+<pre><code>在MongoDb中插入后，查询所有数据显示如下：
+</code></pre>
+
+<p><img src="%E6%88%AA%E5%9B%BE/POI%E6%95%B0%E6%8D%AE.png" alt="MongoDbPOI"></p>
+
+<h3>
+<a id="4nodeexpressbootstrap" class="anchor" href="#4nodeexpressbootstrap" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4.Node+Express+Bootstrap</h3>
+
+<h6>
+<a id="41-项目结构" class="anchor" href="#41-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4.1 项目结构</h6>
+
+<p><img src="%E6%88%AA%E5%9B%BE/%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84.png" alt="项目结构"></p>
+
+<h6>
+<a id="42-页面部分" class="anchor" href="#42-%E9%A1%B5%E9%9D%A2%E9%83%A8%E5%88%86" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4.2 页面部分</h6>
+
+<div class="highlight highlight-text-html-basic"><pre>&lt;<span class="pl-ent">body</span>&gt;
+  &lt;<span class="pl-ent">nav</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>navbar navbar-default navbar-fixed-top<span class="pl-pds">"</span></span> <span class="pl-e">role</span>=<span class="pl-s"><span class="pl-pds">"</span>navigation<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>navbar-header<span class="pl-pds">"</span></span>&gt;
+        &lt;<span class="pl-ent">a</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>navbar-brand<span class="pl-pds">"</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>#<span class="pl-pds">"</span></span>&gt;AGS Server vs MongoDB&lt;/<span class="pl-ent">a</span>&gt;
+    &lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span>&gt;
+        &lt;<span class="pl-ent">p</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>navbar-text navbar-right<span class="pl-pds">"</span></span>&gt;Signed in as
+          &lt;<span class="pl-ent">a</span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>#<span class="pl-pds">"</span></span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>navbar-link<span class="pl-pds">"</span></span>&gt;Thomas&lt;/<span class="pl-ent">a</span>&gt;
+        &lt;/<span class="pl-ent">p</span>&gt;
+    &lt;/<span class="pl-ent">div</span>&gt;
+  &lt;/<span class="pl-ent">nav</span>&gt;
+  &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>container-fluid<span class="pl-pds">"</span></span>&gt;
+  &lt;<span class="pl-ent">h1</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>center<span class="pl-pds">"</span></span>&gt;&lt;%= Servertitle %&gt; vs &lt;%= MongoDBTitle%&gt;&lt;/<span class="pl-ent">h1</span>&gt;
+  &lt;<span class="pl-ent">h4</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>center<span class="pl-pds">"</span></span>&gt;本例针对有59003个兰州市的POI点的要素数据进行属性和空间查询性能对比&lt;/<span class="pl-ent">h4</span>&gt;
+  &lt;<span class="pl-ent">h4</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>center<span class="pl-pds">"</span></span>&gt; Tested by 谷中仁 &lt;/<span class="pl-ent">h4</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>row<span class="pl-pds">"</span></span>&gt;
+      <span class="pl-c">&lt;!--<span class="pl-ii">--------------------------</span>-属性查询对比部分<span class="pl-ii">--------------------</span>-&gt;</span>
+<span class="pl-c">      &lt;div class="col-md-12"&gt;</span>
+<span class="pl-c">        &lt;h1 class="center"&gt;属性查询&lt;/h1&gt;</span>
+<span class="pl-c">        &lt;table id="serverTable" class="table table-striped table-bordered table-hover table-condensed"&gt;</span>
+<span class="pl-c">          &lt;caption&gt;对随机要素</span>
+<span class="pl-c">            &lt;select id="poiInfo" class="selectpicker" data-style="btn btn-success"&gt;</span>
+<span class="pl-c">              &lt;option value="鸿运旅馆(兰州雁滩路店)"&gt;鸿运旅馆(兰州雁滩路店)&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="双裕牛肉拉面全国连锁"&gt;双裕牛肉拉面全国连锁&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="旋子清真寺(西南门)"&gt;旋子清真寺(西南门)&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="兰州大学榆中校区办公楼"&gt;兰州大学榆中校区办公楼&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="北灵观真武殿"&gt;北灵观真武殿&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="秦王川"&gt;秦王川&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="兰州汇昌物资石化有限公司(安宁区店)"&gt;兰州汇昌物资石化有限公司(安宁区店)&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="视康眼镜(中共金崖镇纪律检查委员会西)"&gt;视康眼镜(中共金崖镇纪律检查委员会西)&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="中国人民财产保险有限公司"&gt;中国人民财产保险有限公司&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="小西湖新华厂家属院92㎡"&gt;小西湖新华厂家属院92㎡&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="榆中邮政局麻家寺储蓄所"&gt;榆中邮政局麻家寺储蓄所&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="兰州石化公司离岗退养职工活动中心"&gt;兰州石化公司离岗退养职工活动中心&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="兰塑塑业有限责任公司医务所"&gt;兰塑塑业有限责任公司医务所&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="兰州市西固区安监局"&gt;兰州市西固区安监局&lt;/option&gt;</span>
+<span class="pl-c">              &lt;option value="兰州万达文华酒店"&gt;兰州万达文华酒店&lt;/option&gt;</span>
+<span class="pl-c">            &lt;/select&gt;</span>
+<span class="pl-c">            进行测试;&lt;h3 class="focused"&gt;一般结论：属性查询方面，MongoDb完胜AGS Server&lt;/h3&gt;&lt;/caption&gt;</span>
+<span class="pl-c">          &lt;thread&gt;</span>
+<span class="pl-c">            &lt;tr&gt;</span>
+<span class="pl-c">              &lt;th&gt;序号&lt;/th&gt;</span>
+<span class="pl-c">              &lt;th&gt;所选数据&lt;/th&gt;</span>
+<span class="pl-c">              &lt;th&gt;Server开始时间&lt;/th&gt;</span>
+<span class="pl-c">              &lt;th&gt;Server结束时间&lt;/th&gt;</span>
+<span class="pl-c">              &lt;th&gt;Server耗时(ms)&lt;/th&gt;</span>
+<span class="pl-c">              &lt;th&gt;MongoDB开始时间&lt;/th&gt;</span>
+<span class="pl-c">              &lt;th&gt;MongoDB结束时间&lt;/th&gt;</span>
+<span class="pl-c">              &lt;th&gt;MongoDB耗时(ms)&lt;/th&gt;</span>
+<span class="pl-c">              &lt;th class="focused"&gt;MongoDB-Server时差（ms）&lt;/th&gt;</span>
+<span class="pl-c">            &lt;/tr&gt;</span>
+<span class="pl-c">          &lt;/thread&gt;</span>
+<span class="pl-c">          &lt;tbody id="attr"&gt;</span>
+<span class="pl-c"></span>
+<span class="pl-c">          &lt;/tbody&gt;</span>
+<span class="pl-c">        &lt;/table&gt;</span>
+<span class="pl-c">      &lt;/div&gt;</span>
+<span class="pl-c"></span>
+<span class="pl-c">      &lt;!<span class="pl-ii">------------------------------------------------</span>-空间查询部分 <span class="pl-ii">------------------------------</span>-&gt;</span>
+<span class="pl-c">      &lt;div class="col-md-12"&gt;</span>
+<span class="pl-c">          &lt;h1 class="center"&gt;空间查询&lt;/h1&gt;</span>
+<span class="pl-c">          &lt;div id="map"&gt;&lt;/div&gt;</span>
+<span class="pl-c">          &lt;table id="spatialTable" class="table table-striped table-bordered table-hover table-condensed"&gt;</span>
+<span class="pl-c">              &lt;caption&gt;</span>
+<span class="pl-c">                  &lt;h5&gt;随机点半径100m查询；黑圈代表MongoDb查询结果，粉红色实心圆代表AGS Server查询结果。&lt;/h5&gt;</span>
+<span class="pl-c">                  &lt;h5 class="focused"&gt;因为MongoDb查询单位是mile，转换为meter有误差，所以MongoDb查询结果较AGS Server少&lt;/h5&gt;</span>
+<span class="pl-c">                  &lt;h3 class="focused"&gt;一般结论：空间查询方面，Server更甚一筹&lt;/h3&gt;</span>
+<span class="pl-c">              &lt;/caption&gt;</span>
+<span class="pl-c">              &lt;thread&gt;</span>
+<span class="pl-c">                  &lt;tr&gt;</span>
+<span class="pl-c">                      &lt;th&gt;序号&lt;/th&gt;</span>
+<span class="pl-c">                      &lt;th&gt;Server开始时间&lt;/th&gt;</span>
+<span class="pl-c">                      &lt;th&gt;Server结束时间&lt;/th&gt;</span>
+<span class="pl-c">                      &lt;th&gt;Server耗时(ms)&lt;/th&gt;</span>
+<span class="pl-c">                      &lt;th&gt;Server查询结果数&lt;/th&gt;</span>
+<span class="pl-c">                      &lt;th&gt;MongoDB开始时间&lt;/th&gt;</span>
+<span class="pl-c">                      &lt;th&gt;MongoDB结束时间&lt;/th&gt;</span>
+<span class="pl-c">                      &lt;th&gt;MongoDB耗时(ms)&lt;/th&gt;</span>
+<span class="pl-c">                      &lt;th&gt;MongoDb查询结果数&lt;/th&gt;</span>
+<span class="pl-c">                      &lt;th class="focused"&gt;MongoDB-Server时差（ms）&lt;/th&gt;</span>
+<span class="pl-c">                      &lt;th class="focused"&gt;MongoDb-Server结果数（个）&lt;/th&gt;</span>
+<span class="pl-c">                  &lt;/tr&gt;</span>
+<span class="pl-c">              &lt;/thread&gt;</span>
+<span class="pl-c">          &lt;tbody id="spatialAttr"&gt;</span>
+<span class="pl-c">          &lt;/tbody&gt;</span>
+<span class="pl-c">        &lt;/table&gt;</span>
+<span class="pl-c">      &lt;/div&gt;</span>
+<span class="pl-c">    &lt;/div&gt;</span>
+<span class="pl-c">  &lt;/div&gt;</span>
+<span class="pl-c">&lt;/body&gt;</span></pre></div>
+
+<h5>
+<a id="43-rest接口设计" class="anchor" href="#43-rest%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4.3 REST接口设计</h5>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">router</span>.<span class="pl-en">get</span>(<span class="pl-s"><span class="pl-pds">'</span>/getInfoByName<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">req</span>, <span class="pl-smi">res</span>, <span class="pl-smi">next</span>){
+
+    <span class="pl-en">queryByName</span>(<span class="pl-smi">req</span>.<span class="pl-smi">query</span>.<span class="pl-c1">name</span>).<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>){
+        <span class="pl-smi">res</span>.<span class="pl-c1">send</span>(data);
+    }, <span class="pl-k">function</span>(<span class="pl-smi">err</span>){
+        <span class="pl-smi">res</span>.<span class="pl-c1">send</span>(err);
+    });
+});
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * 查询某点范围某多少距离范围内含有的点</span>
+<span class="pl-c"> * localhost:3000/getNear?x=104&amp;y=36&amp;distance=2</span>
+<span class="pl-c"> * <span class="pl-k">@param</span> {Number}  x   经度</span>
+<span class="pl-c"> * <span class="pl-k">@param</span> {Number}  y   纬度</span>
+<span class="pl-c"> * <span class="pl-k">@param</span> {Number}  distance    距离</span>
+<span class="pl-c"> * <span class="pl-k">@return</span> {json}  </span>
+<span class="pl-c"> */</span>
+<span class="pl-smi">router</span>.<span class="pl-en">get</span>(<span class="pl-s"><span class="pl-pds">"</span>/getNear<span class="pl-pds">"</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">req</span>, <span class="pl-smi">res</span>, <span class="pl-smi">next</span>){
+    <span class="pl-c">//转换单位</span>
+
+    <span class="pl-k">var</span> x<span class="pl-k">=</span> <span class="pl-c1">parseFloat</span>(<span class="pl-smi">req</span>.<span class="pl-smi">query</span>.<span class="pl-c1">x</span>);
+    <span class="pl-k">var</span> y<span class="pl-k">=</span> <span class="pl-c1">parseFloat</span>(<span class="pl-smi">req</span>.<span class="pl-smi">query</span>.<span class="pl-c1">y</span>);
+    <span class="pl-c">//1 英里 = 5 280 英尺 = 63 360 英寸 = 1 609.344 米 = 1760 码 = 1.609344千 米=1.609344公里</span>
+    <span class="pl-k">var</span> distance<span class="pl-k">=</span> <span class="pl-c1">parseFloat</span>(<span class="pl-smi">req</span>.<span class="pl-smi">query</span>.<span class="pl-smi">distance</span><span class="pl-k">/</span> <span class="pl-c1">160900.344</span>);<span class="pl-c">//</span>
+    <span class="pl-en">findNearLocations</span>(x, y, <span class="pl-c1">parseFloat</span>(distance)).<span class="pl-en">then</span>(<span class="pl-smi">data</span><span class="pl-k">=&gt;</span>{
+        <span class="pl-smi">res</span>.<span class="pl-c1">send</span>(data);
+    }, <span class="pl-smi">err</span><span class="pl-k">=&gt;</span>{
+        <span class="pl-smi">res</span>.<span class="pl-c1">send</span>(err);
+    })
+});</pre></div>
+
+<h6>
+<a id="44-计时设计" class="anchor" href="#44-%E8%AE%A1%E6%97%B6%E8%AE%BE%E8%AE%A1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4.4 计时设计</h6>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">map</span>.<span class="pl-en">on</span>(<span class="pl-s"><span class="pl-pds">"</span>click<span class="pl-pds">"</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">evt</span>){
+    <span class="pl-c">//server开始时间</span>
+    serverStartTime <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Date</span>();
+    j<span class="pl-k">++</span>;<span class="pl-c">//序号</span>
+    clickPoint <span class="pl-k">=</span> {<span class="pl-s"><span class="pl-pds">"</span>x<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-smi">evt</span>.<span class="pl-smi">mapPoint</span>.<span class="pl-en">getLongitude</span>(),
+                  <span class="pl-s"><span class="pl-pds">"</span>y<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-smi">evt</span>.<span class="pl-smi">mapPoint</span>.<span class="pl-en">getLatitude</span>()};
+  circle <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Circle</span>({
+    center<span class="pl-k">:</span> <span class="pl-smi">evt</span>.<span class="pl-smi">mapPoint</span>,
+    geodesic<span class="pl-k">:</span> <span class="pl-c1">true</span>,
+    radius<span class="pl-k">:</span> <span class="pl-c1">100</span>
+    <span class="pl-c">// radiusUnit: "esriMiles"</span>
+  });
+  <span class="pl-smi">map</span>.<span class="pl-smi">graphics</span>.<span class="pl-c1">clear</span>();
+  <span class="pl-smi">map</span>.<span class="pl-smi">infoWindow</span>.<span class="pl-en">hide</span>();
+  <span class="pl-k">var</span> graphic <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Graphic</span>(circle, circleSymb);
+  <span class="pl-smi">map</span>.<span class="pl-smi">graphics</span>.<span class="pl-c1">add</span>(graphic);
+  <span class="pl-k">var</span> query <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Query</span>();
+  <span class="pl-smi">query</span>.<span class="pl-smi">geometry</span> <span class="pl-k">=</span> <span class="pl-smi">circle</span>.<span class="pl-en">getExtent</span>();
+  <span class="pl-smi">featureLayer</span>.<span class="pl-en">queryFeatures</span>(query, selectInBuffer);
+});
+<span class="pl-k">function</span> <span class="pl-en">selectInBuffer</span>(<span class="pl-smi">response</span>){
+    serverEndTime <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Date</span>();
+    serverTimeSpan <span class="pl-k">=</span> serverEndTime <span class="pl-k">-</span> serverStartTime;
+    serverCount <span class="pl-k">=</span> <span class="pl-smi">response</span>.<span class="pl-smi">features</span>.<span class="pl-c1">length</span>;
+    mongoStartTime <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Date</span>();
+     <span class="pl-c">//===================================MongoDb开始===================================</span>
+     <span class="pl-k">var</span> url <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>http://localhost:3000/getNear<span class="pl-pds">"</span></span>;
+     <span class="pl-k">var</span> data <span class="pl-k">=</span> {
+        <span class="pl-s"><span class="pl-pds">"</span>x<span class="pl-pds">"</span></span> <span class="pl-k">:</span> <span class="pl-smi">clickPoint</span>.<span class="pl-c1">x</span>,
+        <span class="pl-s"><span class="pl-pds">"</span>y<span class="pl-pds">"</span></span> <span class="pl-k">:</span> <span class="pl-smi">clickPoint</span>.<span class="pl-c1">y</span>,
+        <span class="pl-s"><span class="pl-pds">"</span>distance<span class="pl-pds">"</span></span> <span class="pl-k">:</span> <span class="pl-c1">100</span>
+    };
+    <span class="pl-smi">$</span>.<span class="pl-en">get</span>(url, data, <span class="pl-k">function</span>(<span class="pl-smi">response</span>, <span class="pl-smi">status</span>){
+        mongoEndTime <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Date</span>();
+        mongoTimeSpan <span class="pl-k">=</span> mongoEndTime <span class="pl-k">-</span> mongoStartTime;
+        mongoCount <span class="pl-k">=</span> <span class="pl-smi">response</span>.<span class="pl-smi">result</span>.<span class="pl-c1">length</span>;
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(response);
+        <span class="pl-k">var</span> mongoSymbol <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">SimpleMarkerSymbol</span>();
+        <span class="pl-k">var</span> infoTemplate <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">InfoTemplate</span>(<span class="pl-s"><span class="pl-pds">"</span>MongoDb结果<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>MongoDb结果<span class="pl-pds">"</span></span>)
+        <span class="pl-k">if</span>(<span class="pl-smi">response</span>.<span class="pl-smi">result</span>.<span class="pl-c1">length</span><span class="pl-k">&gt;</span> <span class="pl-c1">0</span>){
+            <span class="pl-k">for</span>(<span class="pl-k">var</span> index <span class="pl-k">in</span> <span class="pl-smi">response</span>.<span class="pl-smi">result</span>){
+                <span class="pl-k">var</span> mongoPoint <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Point</span>([<span class="pl-smi">response</span>.<span class="pl-smi">result</span>[index].<span class="pl-smi">key</span>.<span class="pl-smi">geometry</span>.<span class="pl-c1">x</span>, <span class="pl-smi">response</span>.<span class="pl-smi">result</span>[index].<span class="pl-smi">key</span>.<span class="pl-smi">geometry</span>.<span class="pl-c1">y</span>]);
+                <span class="pl-k">var</span> graphic<span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Graphic</span>(mongoPoint, mongoSymbol, <span class="pl-c1">null</span>, infoTemplate);
+                <span class="pl-smi">map</span>.<span class="pl-smi">graphics</span>.<span class="pl-c1">add</span>(graphic);
+                graphic <span class="pl-k">=</span> <span class="pl-c1">null</span>;
+            }
+        }
+        <span class="pl-k">var</span> mongoVsServerTime<span class="pl-k">=</span> mongoTimeSpan<span class="pl-k">-</span> serverTimeSpan;
+        <span class="pl-k">var</span> mongVsServerCount<span class="pl-k">=</span> mongoCount <span class="pl-k">-</span> serverCount;
+        <span class="pl-c">//控制显示</span>
+        <span class="pl-k">var</span> html <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;tr&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;td&gt;<span class="pl-pds">'</span></span><span class="pl-k">+</span> j <span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/td&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;td&gt;<span class="pl-pds">'</span></span><span class="pl-k">+</span> <span class="pl-smi">serverStartTime</span>.<span class="pl-en">toLocaleTimeString</span>() <span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/td&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;td&gt;<span class="pl-pds">'</span></span><span class="pl-k">+</span> <span class="pl-smi">serverEndTime</span>.<span class="pl-en">toLocaleTimeString</span>() <span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/td&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;td&gt;<span class="pl-pds">'</span></span><span class="pl-k">+</span> serverTimeSpan <span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/td&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;td&gt;<span class="pl-pds">'</span></span><span class="pl-k">+</span> serverCount <span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/td&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;td&gt;<span class="pl-pds">'</span></span><span class="pl-k">+</span> <span class="pl-smi">mongoStartTime</span>.<span class="pl-en">toLocaleTimeString</span>() <span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/td&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;td&gt;<span class="pl-pds">'</span></span><span class="pl-k">+</span> <span class="pl-smi">mongoEndTime</span>.<span class="pl-en">toLocaleTimeString</span>() <span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/td&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;td&gt;<span class="pl-pds">'</span></span><span class="pl-k">+</span> mongoTimeSpan <span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/td&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;td&gt;<span class="pl-pds">'</span></span><span class="pl-k">+</span> mongoCount <span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/td&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;td class="focused"&gt;<span class="pl-pds">'</span></span><span class="pl-k">+</span> mongoVsServerTime <span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/td&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;td class="focused"&gt;<span class="pl-pds">'</span></span><span class="pl-k">+</span> mongVsServerCount <span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/td&gt;<span class="pl-pds">'</span></span>;
+        html <span class="pl-k">+=</span><span class="pl-s"><span class="pl-pds">'</span>&lt;/tr&gt;<span class="pl-pds">'</span></span>;
+        <span class="pl-smi">domConstruct</span>.<span class="pl-en">place</span>(html, <span class="pl-s"><span class="pl-pds">"</span>spatialAttr<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>last<span class="pl-pds">"</span></span>);
+        html <span class="pl-k">=</span><span class="pl-c1">null</span>;
+    });</pre></div>
+
+<h3>
+<a id="5运行" class="anchor" href="#5%E8%BF%90%E8%A1%8C" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5.运行</h3>
+
+<pre><code>在CMD中进入项目目录
+</code></pre>
+
+<div class="highlight highlight-source-shell"><pre><span class="pl-k">&gt;</span> <span class="pl-c1">cd</span>  <span class="pl-k">~</span>/.ServerVsMongoDb
+<span class="pl-k">&gt;</span> node bin/www</pre></div>
+
+<pre><code>打开浏览器进入localhost:3000，效果在最前面......
+</code></pre>
+
+<h3>
+<a id="6总结" class="anchor" href="#6%E6%80%BB%E7%BB%93" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>6.总结</h3>
+
+<pre><code>从最上面的gif图中可以看出，对于5W条数据，属性查询方面MongoDb比ArcGIS for
+Server 的查询速度快；而空间查询方面，ArcGIS for Server较快。因为MongoDb
+空间查询使用的是mile，在转换为meter的过程中会有误差，所以MongoDb的查询结
+果会少于Server的查询数量。
+
+但是，MongoDb对数据不能分析，空间数据的价值就在于空间分析，让数据说话，而
+不是仅仅让数据只用于存储数据。
+
+对于MongoDb更适合于做LBS应用，可以利用MongoDb和一些开源的地图框架就可实现
+GIS数据上图；对于ArcGIS for Server，其主要优势是空间查询和空间分析，对于
+有强GIS需求的项目则是一种更好的选择。
+
+MonogoDB使用简单、安全性高，性能优越，现在，很多应用系统都采用了MongoDB作
+为数据库，由此实现可实现文件存储系统、大数据解决方案、智能打车关键业务等等，
+MonogoDB受到越来越多的人和企业的欢迎。
+</code></pre>
+
+<p>关于此文更早的信息详见<a href="http://mp.weixin.qq.com/s?__biz=MzI3ODM2ODU0Mw==&amp;mid=2247483687&amp;idx=1&amp;sn=a3925b800c64f8665e7a08b8b585d93b&amp;scene=4#wechat_redirect">MongoDb与ArcGIS for Server属性查询与空间查询-前期</a></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/Guzhongren/AGSServerVsMongoDb">AgsServerVSMongodb</a> is maintained by <a href="https://github.com/Guzhongren">Guzhongren</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
