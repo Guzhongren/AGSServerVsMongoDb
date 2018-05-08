@@ -5,6 +5,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+./MetaData/读取json到MongoDb/node_modules/
+./ServerMongoDB/node_modules/
 # Runtime data
 pids
 *.pid
